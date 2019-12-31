@@ -35,20 +35,11 @@ unsigned short checksum(unsigned short *buf,int nword)
 	sum += (sum >> 16);
 	return ~sum;
 }
-int main()
+void MakeData(char *data,int data_len,char *dst__ip,char *src__ip)
 {
-//获取键盘输入
-printf("请输入一个字符串：");
-char data[128] = "";
-fgets(data,sizeof(data),stdin);
-data[strlen(data)-1] = 0;
-//udp数据长度必须是偶数（方便校验）
-int data_len = strlen(data) + strlen(data)%2;
-
+	printf("***%s***%s*****%s\n",data,dst__ip,src__ip);
 unsigned char dst_mac[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
 unsigned char srt_mac[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-unsigned char dst_ip[6] = {10,0,121,237};
-unsigned char srt_ip[6] = {10,0,121,253};
 unsigned char msg[1500] = "";
 struct ether_header *eth_hd  = (struct ether_header *)msg;
 memcpy(eth_hd->ether_dhost,dst_mac,6);
@@ -65,21 +56,21 @@ eth_hd->ether_type = htons(0x0800);
 	ip_hd->ttl = 128;//TTL
 	ip_hd->protocol = 17;//upd协议
 	ip_hd->check = htons(0);//IP 校验
-	ip_hd->saddr = inet_addr("10.0.121.166");//ubuntu的IP
-	ip_hd->daddr = inet_addr("10.0.121.237");//win10的IP
+	ip_hd->saddr = inet_addr(src__ip);//ubuntu的IP
+	ip_hd->daddr = inet_addr(dst__ip);//win10的IP
 	ip_hd->check = htons(checksum((unsigned short *)ip_hd,20/2));
 //组UDP头
 	struct udphdr *udp_hd = (struct udphdr *)(msg+14+20);
 	udp_hd->source = htons(8080);//源端口
-	udp_hd->dest = htons(8080);//目的端口
+	udp_hd->dest = htons(2425);//目的端口
 	udp_hd->len = htons(8+data_len);//UDP报文头长度+UDP数据长度
 	udp_hd->check = htons(0);
 	memcpy(msg+14+20+8,data,data_len);//将用户数据放入
 	//定义伪头部
 	unsigned char wei_head[256] = {}; 
 	WEI_HEAD *head = (WEI_HEAD *)wei_head;
-	head->saddr = inet_addr("10.0.121.166");
-	head->daddr = inet_addr("10.0.121.237");
+	head->saddr = inet_addr(src__ip);
+	head->daddr = inet_addr(dst__ip);
 	head->flag = 0;
 	head->type = 17;
 	head->len = htons(8+data_len);
@@ -96,14 +87,38 @@ eth_hd->ether_type = htons(0x0800);
 	struct sockaddr_ll sll;
 	bzero(&sll,sizeof(sll));
 	sll.sll_ifindex = ethreq.ifr_ifindex;
-	while(1)
-	{
-	
+
 	sendto(fd,msg,len,0,(struct sockaddr *)&sll,sizeof(sll));
-	printf("sendto over\n");	
-	sleep(1);
-	}
-	
+	printf("*****************sendto over\n");
 	close(fd);	
+	
+}
+int main()
+{
+char data[1500];
+char name[128];
+char hostname[128];
+char data_data[512];
+//获取键盘输入
+printf("你是谁\n");
+fgets(name,sizeof(name),stdin);
+name[strlen(name)-1] = 0;
+printf("主机名\n");
+fgets(hostname,sizeof(hostname),stdin);
+hostname[strlen(hostname)-1] = 0;
+while(1)
+{
+	
+printf("想说什么\n");
+fgets(data_data,sizeof(data_data),stdin);
+data[strlen(data_data)-1] = 0;
+
+sprintf(data,"1_lbt6_65#128#3CF011F4C149#0#0#0#4001#9:1577805872:28903:LAPTOP-FJM73KF7:32:%s",data_data);
+//udp数据长度必须是偶数（方便校验）
+int data_len = strlen(data) + strlen(data)%2;
+MakeData(data,data_len,"10.0.121.237","10.0.121.217");
+
+}
+	
 	return 0;
 }	
