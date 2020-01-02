@@ -38,14 +38,17 @@ unsigned short checksum(unsigned short *buf,int nword)
 void MakeData(char *data,int data_len,char *dst__ip,char *src__ip)
 {
 	printf("***%s***%s*****%s\n",data,dst__ip,src__ip);
-unsigned char dst_mac[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
-unsigned char srt_mac[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-unsigned char msg[1500] = "";
-struct ether_header *eth_hd  = (struct ether_header *)msg;
-memcpy(eth_hd->ether_dhost,dst_mac,6);
-memcpy(eth_hd->ether_shost,srt_mac,6);
-eth_hd->ether_type = htons(0x0800);
-//组IP头
+	unsigned char dst_mac[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+	unsigned char srt_mac[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	unsigned char msg[1500] = "";
+	
+	//组MAC头
+	struct ether_header *eth_hd  = (struct ether_header *)msg;
+	memcpy(eth_hd->ether_dhost,dst_mac,6);
+	memcpy(eth_hd->ether_shost,srt_mac,6);
+	eth_hd->ether_type = htons(0x0800);
+	
+	//组IP头
 	struct iphdr *ip_hd = (struct iphdr *)(msg+14);
 	ip_hd->version = 4;
 	ip_hd->ihl = 5;
@@ -59,13 +62,15 @@ eth_hd->ether_type = htons(0x0800);
 	ip_hd->saddr = inet_addr(src__ip);//ubuntu的IP
 	ip_hd->daddr = inet_addr(dst__ip);//win10的IP
 	ip_hd->check = htons(checksum((unsigned short *)ip_hd,20/2));
-//组UDP头
+
+	//组UDP头
 	struct udphdr *udp_hd = (struct udphdr *)(msg+14+20);
 	udp_hd->source = htons(8080);//源端口
 	udp_hd->dest = htons(2425);//目的端口
 	udp_hd->len = htons(8+data_len);//UDP报文头长度+UDP数据长度
 	udp_hd->check = htons(0);
 	memcpy(msg+14+20+8,data,data_len);//将用户数据放入
+	
 	//定义伪头部
 	unsigned char wei_head[256] = {}; 
 	WEI_HEAD *head = (WEI_HEAD *)wei_head;
@@ -74,8 +79,10 @@ eth_hd->ether_type = htons(0x0800);
 	head->flag = 0;
 	head->type = 17;
 	head->len = htons(8+data_len);
+	
 	//将帧数据d中的UDP+data复制到wei_head 尾部
 	memcpy(wei_head+12,msg+14+20,8+data_len);
+	
 	//udp校验
 	udp_hd->check = htons(checksum((unsigned short *)wei_head,(12+8+data_len)/2));
 
