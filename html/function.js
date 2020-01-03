@@ -30,3 +30,23 @@ function my_button()
     {
         alert("让你点你就点啊！快滚！");
     }
+function hero_fun()
+{
+
+    alert(document.getElementById("hero").options[0]);
+    // document.getElementById("hero").selectedIndex
+}
+function timer_fun(arg){
+    var My_timer;
+    if(arg == "1"){
+        My_timer = setInterval("My_timefun()",1000);
+    }
+    else if(arg == "0")
+    {
+        window.clearInterval(My_timer);
+    }
+}
+function My_timefun(){
+    var num = Math.random()*100;
+    document.getElementById("wendu").innerHTML = num;
+}
