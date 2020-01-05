@@ -1,0 +1,44 @@
+[02/Jan/2020:11:57:10 +0000] boa: server version Boa/0.94.13
+[02/Jan/2020:11:57:10 +0000] boa: server built Jan  2 2020 at 19:43:46.
+[02/Jan/2020:11:57:10 +0000] boa: starting server pid=9659, port 80
+[02/Jan/2020:12:00:03 +0000] request from 10.0.121.177 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[02/Jan/2020:12:04:10 +0000] request from 10.0.121.177 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[03/Jan/2020:10:34:58 +0000] boa: server version Boa/0.94.13
+[03/Jan/2020:10:34:58 +0000] boa: server built Jan  2 2020 at 19:43:46.
+[03/Jan/2020:10:34:58 +0000] boa: starting server pid=3177, port 80
+[03/Jan/2020:17:23:47 +0000] boa: server version Boa/0.94.13
+[03/Jan/2020:17:23:47 +0000] boa: server built Jan  2 2020 at 19:43:46.
+[03/Jan/2020:17:23:47 +0000] boa: starting server pid=1671, port 80
+[03/Jan/2020:17:24:12 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[03/Jan/2020:17:29:50 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[03/Jan/2020:17:30:06 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[03/Jan/2020:17:34:10 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[03/Jan/2020:17:34:10 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[03/Jan/2020:18:29:08 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:02:45:20 +0000] boa: server version Boa/0.94.13
+[04/Jan/2020:02:45:20 +0000] boa: server built Jan  2 2020 at 19:43:46.
+[04/Jan/2020:02:45:20 +0000] boa: starting server pid=3886, port 80
+[04/Jan/2020:02:46:10 +0000] request from 10.0.121.237 "GET /AJAXCGI.html HTTP/1.1" ("/home/wgb/boa/www/AJAXCGI.html"): document open: No such file or directory
+[04/Jan/2020:02:46:10 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[04/Jan/2020:02:47:38 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:02:52:30 +0000] request from 10.0.121.237 "GET /AJAXCGi.htm HTTP/1.1" ("/home/wgb/boa/www/AJAXCGi.htm"): document open: No such file or directory
+[04/Jan/2020:02:52:32 +0000] request from 10.0.121.237 "GET /AJAXCGi.l HTTP/1.1" ("/home/wgb/boa/www/AJAXCGi.l"): document open: No such file or directory
+[04/Jan/2020:02:52:54 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[04/Jan/2020:02:53:02 +0000] request from 10.0.121.237 "(null)" ("(null)"): header read: Connection reset by peer
+[04/Jan/2020:02:53:53 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:02:54:47 +0000] request from 10.0.121.237 "GET /favicon.ico HTTP/1.1" ("/home/wgb/boa/www/favicon.ico"): document open: No such file or directory
+[04/Jan/2020:02:54:52 +0000] request from 10.0.121.237 "(null)" ("(null)"): header read: Connection reset by peer
+[04/Jan/2020:03:00:21 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:03:02:28 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:03:02:28 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:03:05:15 +0000] caught SIGTERM, starting shutdown
+[04/Jan/2020:03:05:15 +0000] exiting Boa normally (uptime 1195 seconds)
+[04/Jan/2020:03:15:49 +0000] boa: server version Boa/0.94.13
+[04/Jan/2020:03:15:49 +0000] boa: server built Jan  4 2020 at 11:14:48.
+[04/Jan/2020:03:15:49 +0000] boa: starting server pid=5127, port 80
+[04/Jan/2020:03:15:53 +0000] request from 10.0.121.237 "GET /AJAXCGi.html HTTP/1.1" ("/mnt/hgfs/win10_ubuntu/MyIntCode/boa/boa/www/AJAXCGi.html"): document open: No such file or directory
+[04/Jan/2020:03:15:55 +0000] request from 10.0.121.237 "GET /AJAXCGi.html HTTP/1.1" ("/mnt/hgfs/win10_ubuntu/MyIntCode/boa/boa/www/AJAXCGi.html"): document open: No such file or directory
+[04/Jan/2020:03:17:05 +0000] request from 10.0.121.237 "(null)" ("(null)"): connection timed out
+[04/Jan/2020:03:17:14 +0000] request from 10.0.121.237 "GET /AJAXCGi.html HTTP/1.1" ("/mnt/hgfs/win10_ubuntu/MyIntCode/boa/boa/www/AJAXCGi.html"): document open: No such file or directory
+[04/Jan/2020:03:17:17 +0000] request from 10.0.121.237 "GET / HTTP/1.1" ("/mnt/hgfs/win10_ubuntu/MyIntCode/boa/boa/www/"): document open: No such file or directory
+[04/Jan/2020:03:17:19 +0000] request from 10.0.121.237 "GET / HTTP/1.1" ("/mnt/hgfs/win10_ubuntu/MyIntCode/boa/boa/www/"): document open: No such file or directory
