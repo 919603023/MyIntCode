@@ -724,7 +724,8 @@ void MyGetMac(char *BackMac, const char *Mac)
 {
     for(int i = 0 ; i < 6 ; i++)
     {
-         short tmp = (My_atoi(*(Mac+i))  <<  4  + (My_atoi(*(Mac+i+1)) & 0x0f));
+         short tmp = ((My_atoi(*(Mac+i))  <<  4)  | (My_atoi(*(Mac+i+1)) & 0x0f));
+         short *temp = tmp ;
       *(BackMac+i)=*((char*)temp);
     }
 }
