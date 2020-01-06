@@ -44,8 +44,10 @@
 #define IGMP 1
 #define TCP 2
 #define UDP 3
-#define ARP 4
-#define RARP 5
+#define ARP_GO 4
+#define ARP_BACK 5
+#define RARP_GO 6
+#define RARP_BACK 7
 
 
 typedef struct
@@ -337,23 +339,31 @@ int AnalyzeAgreement(char* buf)
 		else if(type == 0x0806)
 		{
 			unsigned char *arp = buf+14;
-
+			char *a = {0x01}; //////////////////////////////
+			char *b = {0x02};
+			char *c = {0x03};
+			char *d = {0x04};
 			memcpy(mybuf.src_ip,arp+14,4);
 
 			memcpy(mybuf.dst_ip,arp+24,4);
+			if(memcmp(arp+7,a,1) == 0)mybuf.type = ARP_GO;
+			if(memcmp(arp+7,b,1) == 0)mybuf.type = ARP_BACK;
+
 			
-			mybuf.type = ARP;
 			
 		}
 		else if(type == 0x8035)
 		{
+			char *c = {0x03};
+			char *d = {0x04};
 			unsigned char *rarp = buf+14;
 
 			memcpy(mybuf.src_ip,rarp+14,4);
 
 			memcpy(mybuf.dst_ip,rarp+24,4);
 
-			mybuf.type = RARP;
+			if(memcmp(rarp+7,c,1) == 0)mybuf.type = RARP_GO;
+			if(memcmp(rarp+7,d,1) == 0)mybuf.type = RARP_BACK;
 		}
 		else
 		{
@@ -364,11 +374,22 @@ int AnalyzeAgreement(char* buf)
 
 int SendTo(int len,char *buf)
 {
+    int i =  WhichEthGo();
+	//获取ARP
+	//更改mac地址
+	//
+
+
+
+
+
+
+
 	struct sockaddr_ll sll;
 
 	struct ifreq ethreq;
 
-	strncpy(ethreq.ifr_name,,IFNAMSIZ);
+	strncpy(ethreq.ifr_name,net_interface[i].name,IFNAMSIZ);
 
 	ioctl(fd,SIOCGIFINDEX,&ethreq);
 		
@@ -383,6 +404,32 @@ int WhichEthGo()
 {
 	if(mybuf.type == TCP || mybuf.type == UDP || mybuf.type == ICMP)
 	{
-		
+		for(int i = 0;i < interface_num ; i++)
+		{
+			if(AND(net_interface[i].netmask , net_interface[i].ip) == AND(net_interface[i].netmask , mybuf.dst_ip))
+			{
+				return i;
+			}
+		}
 	}
+}
+
+int AND(unsigned char * first,unsigned char *secend)
+{
+	char buff[15],buff1[15];
+	int first1,first2,first3,first4,first5 = 0;
+	int secend1,secend2,secend3,secend4,secend5 = 0;
+	sprintf(buff,"%d:%d:%d:%d",first+1,first+2,first+3,first+4);
+	sscanf(buff,"%d:%d:%d:%d",first1,first2,first3,first4);
+	sprintf(buff1,"%d:%d:%d:%d",secend+1,secend+2,secend+3,secend+4);
+	sscanf(buff1,"%d:%d:%d:%d",secend1,secend2,secend3,secend4);
+	first5 = first5 | (first1 << 24);
+	first5 = first5 | (first2 << 16);
+	first5 = first5 | (first3 << 8);
+	first5 = first5 | first4 ;
+	secend5 = secend5 | (secend1 << 24);
+	secend5 = secend5 | (secend2 << 16);
+	secend5 = secend5 | (secend3 << 8);
+	secend5 = secend5 | secend4 ;
+	return first5 & secend5;
 }
