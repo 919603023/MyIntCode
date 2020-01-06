@@ -39,6 +39,34 @@
 
 #include <ifaddrs.h>
 
+#define ICMP 0
+#define IGMP 1
+#define TCP 2
+#define UDP 3
+#define ARP 4
+#define RARP 5
+
+
+typedef struct
+{
+
+  char name[20];
+
+  unsigned char type[10];
+
+  unsigned short src_port;
+
+  unsigned short dst_port;
+
+  unsigned char src_ip[4];
+
+  unsigned char dst_ip[4];
+
+  unsigned char src_mac[6];
+
+  unsigned char dst_mac[6];
+
+} MYBUF;
 
 typedef struct interface{
 	char name[20];		//�ӿ�����
@@ -50,6 +78,8 @@ typedef struct interface{
 }INTERFACE;
 
 int interface_num=0;//接口数量
+
+MYBUF mybuf;
 
 INTERFACE net_interface[16];//接口数据
 int get_interface_num();
@@ -76,18 +106,30 @@ int main()
 	
 	while(1){
 
-
+		bzero(mybuf,sizeof(mybuf));
 		unsigned char buf[1500] = "";
 		int len = recvfrom(fd,buf,sizeof(buf),0,NULL,NULL);
 		
 		unsigned short type = 0;
 		
 		type = ntohs(*(unsigned short *)(buf+12));
-		int Num = MyMacCmp(buf);
+		int Num = MyWhichEth(buf);
 		if(Num == -1)
 		{
 			continue;
 		}
+		int Type = AnalyzeAgreement(buf);
+		switch (Type)
+		{
+		case ICMP:
+			
+			break;
+		
+		default:
+			break;
+		}
+
+
 		if(Num  == 1)
 		{
 		memcpy(buf,Arm_mac,6);
@@ -244,25 +286,88 @@ void getinterface(){
 }
 
 
-int MyMacCmp(char *buf)
+int MyWhichEth(char *buf)
 {
 	for(int i = 0;i < interface_num; i++)
 	{
 			if(memcmp(buf,net_interface[i].mac,6) == 0)
 			{
+				sprintf(mybuf.name,"%s",net_interface[i]);
 				return i;
 			}
 	}
 	return -1;
 }
-int MyIpCmp(char *buf)
+
+int AnalyzeAgreement(char* buf)
 {
-	for(int i = 0;i < interface_num; i++)
-	{
-			if(memcmp(buf,net_interface[i].ip,6) == 0)
+		
+		memcpy(mybuf.dst_mac,buf,6);
+
+		memcpy(mybuf.src_mac,buf+6,6);
+
+		unsigned short type = 0;
+		type = ntohs(*(unsigned short *)(buf+12));
+
+		printf("协议类型：type = %#x\n",type);
+
+		if(type == 0x0800)
+		{
+			unsigned char *ip = buf+14;
+			
+			memcpy(mybuf.src_ip,ip+12,4);
+
+			memcpy(mybuf.dst_ip,ip+16,4);
+
+
+			if(buf[14+8+1] == 0x01)
 			{
-				return i;
+					unsigned char *icmp = buf+14+(ip[0]&0x0f)*4;
+
+					return ICMP;
 			}
-	}
-	return -1;
+			else if(buf[14+8+1] == 0x06)
+			{
+				unsigned char *tcp = buf+14+(ip[0]&0x0f)*4;
+
+				mybuf.src_port = ntohs(*(unsigned short *)tcp);
+
+				mybuf.dst_port = ntohs(*(unsigned short *)(tcp+2));
+	
+				return TCP;
+			}
+			else if(buf[14+8+1] == 0x11)
+			{
+				
+				unsigned char *udp = buf+14+(ip[0]&0x0f)*4;
+				
+				mybuf.src_port = ntohs(*(unsigned short *)udp);
+
+                mybuf.dst_port = ntohs(*(unsigned short *)(udp+2));
+
+				return UDP;
+			}
+		}
+		else if(type == 0x0806)
+		{
+			unsigned char *arp = buf+14;
+
+			memcpy(mybuf.src_ip,arp+14,4);
+
+			memcpy(mybuf.dst_ip,arp+24,4);
+			
+			return ARP;
+			
+		}
+		else if(type == 0x8035)
+		{
+			unsigned char *rarp = buf+14;
+
+			memcpy(mybuf.src_ip,rarp+14,4);
+
+			memcpy(mybuf.dst_ip,rarp+24,4);
+
+			return RARP;
+		}
+		return -1;
 }
