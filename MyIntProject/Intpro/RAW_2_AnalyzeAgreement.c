@@ -39,6 +39,7 @@
 
 #include <ifaddrs.h>
 
+#define NuLL -1
 #define ICMP 0
 #define IGMP 1
 #define TCP 2
@@ -50,9 +51,9 @@
 typedef struct
 {
 
-  char name[20];
+  int eth;
 
-  unsigned char type[10];
+  int type;
 
   unsigned short src_port;
 
@@ -107,44 +108,23 @@ int main()
 	while(1){
 
 		bzero(mybuf,sizeof(mybuf));
+
 		unsigned char buf[1500] = "";
+
 		int len = recvfrom(fd,buf,sizeof(buf),0,NULL,NULL);
-		
-		unsigned short type = 0;
-		
-		type = ntohs(*(unsigned short *)(buf+12));
-		int Num = MyWhichEth(buf);
-		if(Num == -1)
+				
+		if(AnalyzeAgreement(buf) == -1)
 		{
 			continue;
 		}
-		int Type = AnalyzeAgreement(buf);
-		switch (Type)
-		{
-		case ICMP:
-			
-			break;
 		
-		default:
-			break;
-		}
 
 
 		if(Num  == 1)
 		{
 		memcpy(buf,Arm_mac,6);
 		memcpy(buf+6,ens39_mac,6);
-		struct sockaddr_ll sll;
-	    struct ifreq ethreq;
-		strncpy(ethreq.ifr_name,"ens39",IFNAMSIZ);
-		ioctl(fd,SIOCGIFINDEX,&ethreq);
 		
-		bzero(&sll,sizeof(sll));
-		sll.sll_ifindex = ethreq.ifr_ifindex;
-			
-		printf("ens33\n");
-		printf("%d\n",len);
-		sendto(fd,buf,len,0,(struct sockaddr *)&sll,sizeof(sll));
 		}else
 		{
 			memcpy(buf,pc_mac,6);
@@ -286,22 +266,24 @@ void getinterface(){
 }
 
 
-int MyWhichEth(char *buf)
-{
-	for(int i = 0;i < interface_num; i++)
-	{
-			if(memcmp(buf,net_interface[i].mac,6) == 0)
-			{
-				sprintf(mybuf.name,"%s",net_interface[i]);
-				return i;
-			}
-	}
-	return -1;
-}
+
 
 int AnalyzeAgreement(char* buf)
 {
+	mybuf.eth = -1;
+
+	for(int i = 0;i < interface_num; i++)
+	{
 		
+			if(memcmp(buf,net_interface[i].mac,6) == 0)
+			{
+				mybuf.eth = i;
+
+				break;
+			}
+	}
+	if(mybuf.eth == -1) return -1;
+
 		memcpy(mybuf.dst_mac,buf,6);
 
 		memcpy(mybuf.src_mac,buf+6,6);
@@ -314,7 +296,7 @@ int AnalyzeAgreement(char* buf)
 		if(type == 0x0800)
 		{
 			unsigned char *ip = buf+14;
-			
+
 			memcpy(mybuf.src_ip,ip+12,4);
 
 			memcpy(mybuf.dst_ip,ip+16,4);
@@ -324,7 +306,7 @@ int AnalyzeAgreement(char* buf)
 			{
 					unsigned char *icmp = buf+14+(ip[0]&0x0f)*4;
 
-					return ICMP;
+					mybuf.type = ICMP;
 			}
 			else if(buf[14+8+1] == 0x06)
 			{
@@ -334,7 +316,7 @@ int AnalyzeAgreement(char* buf)
 
 				mybuf.dst_port = ntohs(*(unsigned short *)(tcp+2));
 	
-				return TCP;
+				mybuf.type = TCP;
 			}
 			else if(buf[14+8+1] == 0x11)
 			{
@@ -345,7 +327,11 @@ int AnalyzeAgreement(char* buf)
 
                 mybuf.dst_port = ntohs(*(unsigned short *)(udp+2));
 
-				return UDP;
+				mybuf.type = UDP;
+			}
+			else
+			{
+				mybuf.type = NuLL;
 			}
 		}
 		else if(type == 0x0806)
@@ -356,7 +342,7 @@ int AnalyzeAgreement(char* buf)
 
 			memcpy(mybuf.dst_ip,arp+24,4);
 			
-			return ARP;
+			mybuf.type = ARP;
 			
 		}
 		else if(type == 0x8035)
@@ -367,7 +353,36 @@ int AnalyzeAgreement(char* buf)
 
 			memcpy(mybuf.dst_ip,rarp+24,4);
 
-			return RARP;
+			mybuf.type = RARP;
 		}
-		return -1;
+		else
+		{
+			mybuf.type = NuLL;
+		}
+		return mybuf.eth;
+}
+
+int SendTo(int len,char *buf)
+{
+	struct sockaddr_ll sll;
+
+	struct ifreq ethreq;
+
+	strncpy(ethreq.ifr_name,,IFNAMSIZ);
+
+	ioctl(fd,SIOCGIFINDEX,&ethreq);
+		
+	bzero(&sll,sizeof(sll));
+
+	sll.sll_ifindex = ethreq.ifr_ifindex;
+			
+	sendto(fd,buf,len,0,(struct sockaddr *)&sll,sizeof(sll));
+}
+
+int WhichEthGo()
+{
+	if(mybuf.type == TCP || mybuf.type == UDP || mybuf.type == ICMP)
+	{
+		
+	}
 }
