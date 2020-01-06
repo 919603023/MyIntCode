@@ -35,6 +35,8 @@
 
 #include <ifaddrs.h>
 
+#include "get_interface.h"
+
 #define config_eth_msg 0
 
 #define config_route 1
@@ -122,7 +124,31 @@ typedef struct Filter_MsgNode
 } Filter_Msg;
 
 extern MyProtocolType ProtocolType(unsigned char *buff, int size);
+#define MAXINTERFACES 16    /* ���ӿ��� */
 
+typedef struct interface{
+	char name[20];		//�ӿ�����
+	unsigned char ip[4];		//IP��ַ
+	unsigned char mac[6];		//MAC��ַ
+	unsigned char netmask[4];	//��������
+	unsigned char br_ip[4];		//�㲥��ַ
+	int  flag;			//״̬
+}INTERFACE;
+extern INTERFACE net_interface[MAXINTERFACES];//�ӿ�����
+
+/******************************************************************
+��	��:	int getinterface()
+��	��:	��ȡ�ӿ���Ϣ
+��	��:	��
+*******************************************************************/
+extern void getinterface();
+
+/******************************************************************
+��	��:	int get_interface_num()
+��	��:	��ȡʵ�ʽӿ�����
+��	��:	�ӿ�����
+*******************************************************************/
+int get_interface_num();
 extern int IsSameSegment(unsigned char *first, unsigned char *second, unsigned char *firstmask, unsigned char *secondmask, int size);
 
 #endif
