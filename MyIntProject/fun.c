@@ -580,12 +580,10 @@ void InsertEth_MsgToList(Config_Eth_Msg* Node,Config_Eth_Msg** Head)
 {
         if (*Head == NULL)
     {
-        *Head = Node;
-        
+        *Head = Node;    
     }
     else
     {
-       
              //定义一个指针变量保存第一个结点的地址
             Config_Eth_Msg *p = *Head;
 
@@ -601,20 +599,15 @@ void InsertEth_MsgToList(Config_Eth_Msg* Node,Config_Eth_Msg** Head)
         //将新插入结点的地址保存在最后一个结点的next指针里面
         p->next = Node;
         }
-    
-
-    
 }
 void InsertRoute_MsgToList(Config_Route_Msg* Node,Config_Route_Msg** Head)
 {
        if (*Head == NULL)
     {
-        *Head = Node;
-        
+        *Head = Node; 
     }
     else
     {
-       
              //定义一个指针变量保存第一个结点的地址
             Config_Route_Msg *p = *Head;
 
@@ -625,7 +618,6 @@ void InsertRoute_MsgToList(Config_Route_Msg* Node,Config_Route_Msg** Head)
             {
                 p = p->next;
             }
-
            Node->front = p;
         //将新插入结点的地址保存在最后一个结点的next指针里面
         p->next = Node;
