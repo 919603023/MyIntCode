@@ -48,7 +48,8 @@
 #define ARP_BACK 5
 #define RARP_GO 6
 #define RARP_BACK 7
-
+#define UNICAST 0
+#define BROADCAST 1
 
 typedef struct
 {
@@ -91,25 +92,30 @@ int MyMacCmp(char *buf);
 
 void getinterface();
 
+int AnalyzeAgreement(char* buf);
+
+int AND(unsigned char * first,unsigned char *secend);
+
+int IsSameSegment();
+
+int SendTo(int len,char *buf,int eth,int fd);
+
+
+
 int main()
 {
-	    char src_mac[18] = "";
-		char dst_mac[18] = "";
-		char ens33_mac[6] = {0x00,0x0C,0x29,0x75,0x13,0x7B};
-		char ens39_mac[6] = {0x00,0x0C,0x29,0x75,0x13,0x85};
+
 		
-		char pc_mac[6] = {0x54,0xee,0x75,0x95,0x8b,0x6f};
-		char Arm_mac[6]= {0x00,0x53,0x50,0x00,0x2C,0x63};
-    	getinterface();
-	
-	
-	
-	int fd = socket(PF_PACKET,SOCK_RAW,htons(ETH_P_ALL));
-	printf("fd = %d\n",fd);
+		char pc_mac[6] = {0x54,0xEE,0x75,0x95,0x8B,0x6F};
+		char Arm_mac[6]= {0x00,0x53,0x50,0x00,0x09,0x2B};
+    	getinterface(); // 获取自身网卡信息
+
+		int fd = socket(PF_PACKET,SOCK_RAW,htons(ETH_P_ALL));
+		printf("fd = %d\n",fd);
 	
 	while(1){
 
-		bzero(mybuf,sizeof(mybuf));
+		bzero(&mybuf,sizeof(mybuf));
 
 		unsigned char buf[1500] = "";
 
@@ -119,44 +125,49 @@ int main()
 		{
 			continue;
 		}
+		//是否是同一网段
+		int  Ethnum;
 		
+		Ethnum = IsSameSegment();
 
+		if(Ethnum == -1)
+		{
+			//没有同一网段
+			continue;
+			//路由表查表
+		}
+		//有同一网段，返回所出去的网卡
 
-		if(Num  == 1)
+		//查ARP表
+		
+		//如果有，返回网卡
+
+		//如果没有，那就广播发ARP
+
+		//广播后，获得目的MAC
+
+		//查防火墙过滤表
+
+		//固定ARM——MAC
+
+		//固定PC———MAC
+
+		if(Ethnum  == 2)
 		{
 		memcpy(buf,Arm_mac,6);
-		memcpy(buf+6,ens39_mac,6);
-		
-		}else
+		memcpy(buf+6,net_interface[Ethnum].mac,6);
+		SendTo(len,buf,Ethnum,fd);
+		printf("to ens39\n");
+		printf("协议类型：%d\n",mybuf.type);
+		}else if(Ethnum == 1)
 		{
 			memcpy(buf,pc_mac,6);
-			memcpy(buf+6,ens33_mac,6);
-			
-			struct sockaddr_ll sll;
-			struct ifreq ethreq;
-			
-		strncpy(ethreq.ifr_name,"ens33",IFNAMSIZ);
-		ioctl(fd,SIOCGIFINDEX,&ethreq);
-		
-		bzero(&sll,sizeof(sll));
-		sll.sll_ifindex = ethreq.ifr_ifindex;
-		printf("ens39\n");
-sendto(fd,buf,len,0,(struct sockaddr *)&sll,sizeof(sll));
-		}
-		
-		
-		
-		//连PC
-		// if(memcmp(buf,ens33_mac,6) == 0  )
-		// {
-			
-		// }
-		// else if(memcmp(buf,ens39_mac,6) == 0)
-		// {
-			
-		// }
-		
-		
+			memcpy(buf+6,net_interface[Ethnum].mac,6);
+		SendTo(len,buf,Ethnum,fd);
+		printf("to ens33\n");
+		printf("协议类型：%d\n",mybuf.type);
+
+		}	
 	}
 	close(fd);
 return 0;
@@ -293,7 +304,7 @@ int AnalyzeAgreement(char* buf)
 		unsigned short type = 0;
 		type = ntohs(*(unsigned short *)(buf+12));
 
-		printf("协议类型：type = %#x\n",type);
+		//printf("协议类型：type = %#x\n",type);
 
 		if(type == 0x0800)
 		{
@@ -339,31 +350,41 @@ int AnalyzeAgreement(char* buf)
 		else if(type == 0x0806)
 		{
 			unsigned char *arp = buf+14;
-			char *a = {0x01}; //////////////////////////////
-			char *b = {0x02};
-			char *c = {0x03};
-			char *d = {0x04};
+			// int c  = 0;
+			//  int d = 0;
+			//  c  =  (c | 0x01) << 24;
+			//  char *a = (char *)c;
+			//  d  = (d | 0x02) << 24;
+			//  char *b = (char *)d;
+		
+			
+			
 			memcpy(mybuf.src_ip,arp+14,4);
 
 			memcpy(mybuf.dst_ip,arp+24,4);
-			if(memcmp(arp+7,a,1) == 0)mybuf.type = ARP_GO;
-			if(memcmp(arp+7,b,1) == 0)mybuf.type = ARP_BACK;
+			// if(memcmp(arp+7,a,1) == 0)mybuf.type = ARP_GO;
+			// if(memcmp(arp+7,b,1) == 0)mybuf.type = ARP_BACK;
 
 			
 			
 		}
 		else if(type == 0x8035)
 		{
-			char *c = {0x03};
-			char *d = {0x04};
-			unsigned char *rarp = buf+14;
+			//  int a  = 0;
+			//  int b = 0;
+			//  a  =  (a | 0x03) << 24;
+			//  char *c = (char *)a;
+			// b  =  (b | 0x04) << 24;
+			//  char *d = (char *)a;
+			
+			 unsigned char *rarp = buf+14;
 
 			memcpy(mybuf.src_ip,rarp+14,4);
 
 			memcpy(mybuf.dst_ip,rarp+24,4);
 
-			if(memcmp(rarp+7,c,1) == 0)mybuf.type = RARP_GO;
-			if(memcmp(rarp+7,d,1) == 0)mybuf.type = RARP_BACK;
+			// if(memcmp(rarp+7,c,1) == 0)mybuf.type = RARP_GO;
+			// if(memcmp(rarp+7,d,1) == 0)mybuf.type = RARP_BACK;
 		}
 		else
 		{
@@ -372,24 +393,14 @@ int AnalyzeAgreement(char* buf)
 		return mybuf.eth;
 }
 
-int SendTo(int len,char *buf)
+int SendTo(int len,char *buf,int eth,int fd)
 {
-    int i =  WhichEthGo();
-	//获取ARP
-	//更改mac地址
-	//
-
-
-
-
-
-
-
+    
 	struct sockaddr_ll sll;
 
 	struct ifreq ethreq;
 
-	strncpy(ethreq.ifr_name,net_interface[i].name,IFNAMSIZ);
+	strncpy(ethreq.ifr_name,net_interface[eth].name,IFNAMSIZ);
 
 	ioctl(fd,SIOCGIFINDEX,&ethreq);
 		
@@ -400,7 +411,7 @@ int SendTo(int len,char *buf)
 	sendto(fd,buf,len,0,(struct sockaddr *)&sll,sizeof(sll));
 }
 
-int WhichEthGo()
+int IsSameSegment()
 {
 	if(mybuf.type == TCP || mybuf.type == UDP || mybuf.type == ICMP)
 	{
@@ -408,28 +419,92 @@ int WhichEthGo()
 		{
 			if(AND(net_interface[i].netmask , net_interface[i].ip) == AND(net_interface[i].netmask , mybuf.dst_ip))
 			{
+				
 				return i;
+				
 			}
 		}
 	}
+	return -1;
 }
 
 int AND(unsigned char * first,unsigned char *secend)
 {
-	char buff[15],buff1[15];
-	int first1,first2,first3,first4,first5 = 0;
-	int secend1,secend2,secend3,secend4,secend5 = 0;
-	sprintf(buff,"%d:%d:%d:%d",first+1,first+2,first+3,first+4);
-	sscanf(buff,"%d:%d:%d:%d",first1,first2,first3,first4);
-	sprintf(buff1,"%d:%d:%d:%d",secend+1,secend+2,secend+3,secend+4);
-	sscanf(buff1,"%d:%d:%d:%d",secend1,secend2,secend3,secend4);
-	first5 = first5 | (first1 << 24);
-	first5 = first5 | (first2 << 16);
-	first5 = first5 | (first3 << 8);
-	first5 = first5 | first4 ;
-	secend5 = secend5 | (secend1 << 24);
-	secend5 = secend5 | (secend2 << 16);
-	secend5 = secend5 | (secend3 << 8);
-	secend5 = secend5 | secend4 ;
-	return first5 & secend5;
+
+ 	unsigned int * first1 = (unsigned char *)first;
+	unsigned int * secend1 = (unsigned char *)secend;
+
+	
+	return *first1 & *secend1;
+}
+
+int SendArp(int eth,int flag,int fd)
+{
+unsigned char dst_mac[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+unsigned char srt_mac[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+unsigned char dst_ip[6] = {10,0,121,237};
+unsigned char srt_ip[6] = {10,0,121,253};
+unsigned char msg[1500] = "";
+struct ether_header *eth_hd  = (struct ether_header *)msg;
+memcpy(eth_hd->ether_dhost,dst_mac,6);
+memcpy(eth_hd->ether_shost,srt_mac,6);
+eth_hd->ether_type = htons(0x0806);
+struct arphdr *arp_hd = (struct arphdr*)(msg+14);
+arp_hd->ar_hrd = htons(1);
+arp_hd->ar_pro = htons(0x0800);
+arp_hd->ar_hln = 6;
+arp_hd->ar_pln = 4;
+arp_hd->ar_op = htons(1);
+memcpy(arp_hd->__ar_sha,srt_mac,6);
+memcpy(arp_hd->__ar_sip,net_interface[eth].ip,4);
+memcpy(arp_hd->__ar_tha,dst_mac,6);
+memcpy(arp_hd->__ar_tip,mybuf.dst_ip,4);
+
+	
+	int len = 42;
+	struct ifreq ethreq;
+	strncpy(ethreq.ifr_name,net_interface[eth].name,IFNAMSIZ);
+	ioctl(fd,SIOCGIFINDEX,&ethreq);
+	struct sockaddr_ll sll;
+	bzero(&sll,sizeof(sll));
+	sll.sll_ifindex = ethreq.ifr_ifindex;
+    
+	if(flag == 0)
+	{
+		//单播
+		SendTo(len,msg,eth,fd);
+	}
+	else if(flag == 1)
+	{
+		for(unsigned int i =BinaryAnd(GetIpNet(eth),1);i != i | (~((unsigned int)(net_interface[eth].netmask)));i = BinaryAnd(i,1))
+		{
+			memcpy(msg+41,&i,4);
+			sendto(fd,msg,len,0,(struct sockaddr *)&sll,sizeof(sll));
+		}
+		
+		
+
+	}
+	
+		
+	return 0;
+}
+//获取网络地址(网段地址)
+unsigned int GetIpNet(int eth)
+{
+		unsigned int a= (unsigned int)(net_interface[eth].ip);
+		unsigned int b= (unsigned int)(net_interface[eth].netmask);
+		return a & b;
+}
+
+unsigned int BinaryAnd(unsigned int first,unsigned int second)
+{
+	unsigned int c;
+	while(second != 0)
+	{
+		c = (first & second) << 1;
+		first = first ^ second;
+		second = c;
+	}
+	return first;
 }
