@@ -29,10 +29,13 @@ int main()
 
 		if(mybuf.type == ARP_BACK)
 		{
-			
+			//如果是ARP请求，使用函数查看是否有该IP的记录，
+                        //如果有该IP的记录，则使用插入节点函数，插入节点
+                         //如果返回-1证明列表插进去了，如果是1证明查到了ARP记录
 			if(ArpDispose(mybuf.src_ip,NULL,mybuf.dst_mac,FIND) == -1)
-			
+			{
 			continue;
+                        }
 			
 		}
 		//是否是同一网段
@@ -53,6 +56,8 @@ int main()
 		//有同一网段，返回所出去的网卡
 
 		//查ARP表
+                 //如果查到，将目的buf中的目的mac赋值为此IP的mac
+                //如果查不到，应该发送ARP请求，并跳过本次循环
 		if(ArpDispose(mybuf.dst_ip,NULL,mybuf.dst_mac,FIND) == -1)
 		{
 			continue;
