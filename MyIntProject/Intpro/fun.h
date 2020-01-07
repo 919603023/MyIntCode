@@ -65,6 +65,8 @@
 #define RARP_GO 6
 #define RARP_BACK 7
 
+#define DELETE 0
+#define FIND 1
 
 #define UNICAST 0
 #define BROADCAST 1
@@ -105,9 +107,23 @@ typedef struct  arplist
     int eth;
     unsigned char ip[4];
     unsigned char mac[6];
+	struct arplist * front;
+	struct arplist * next;
 } ARPLIST;
 
+//config_route路由表文件
+typedef struct Route_MsgNode
+{
 
+  unsigned char Route_Ip[4];
+
+  unsigned char Route_Mac[6];
+
+  struct Route_MsgNode *front;
+
+  struct Route_MsgNode *next;
+
+}Config_Route_Msg;
 
 extern int get_interface_num();
 
@@ -130,13 +146,17 @@ extern unsigned int GetIpNet(int eth);
 
 extern int SendArp(int eth, int flag, int fd,unsigned char *ip);
 
+extern void InsertArp_listToList(ARPLIST* Node,ARPLIST** Head);
+
+extern int ArpDispose(char *ip,char *mac,char *mac_back,int flag);
+
 extern int interface_num ; //接口数量
 
 extern MYBUF mybuf;
 
 extern INTERFACE net_interface[16]; //接口数据
 
-extern ARPLIST ArpList;
+extern ARPLIST *HEAD;
 
 
 #endif

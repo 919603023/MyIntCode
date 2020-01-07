@@ -5,6 +5,8 @@ MYBUF mybuf;
 
 INTERFACE net_interface[16]; //接口数据
 
+ARPLIST *HEAD = NULL;
+
 int get_interface_num()
 {
 	return interface_num;
@@ -243,7 +245,7 @@ int SendTo(int len, char *buf, int eth, int fd)
 
 	sll.sll_ifindex = ethreq.ifr_ifindex;
 
-	printf("sendto=== %ld\n",sendto(fd, buf, len, 0, (struct sockaddr *)&sll, sizeof(sll)));
+	sendto(fd, buf, len, 0, (struct sockaddr *)&sll, sizeof(sll));
 }
 
 int IsSameSegment()
@@ -334,4 +336,78 @@ unsigned int BinaryAnd(unsigned int first, unsigned int second)
 		second = c;
 	}
 	return first;
+}
+//ARP处理函数
+int ArpDispose(char *ip,char *mac,char *mac_back,int flag)
+{
+	ARPLIST*head = HEAD;
+	
+	ARPLIST *temp = (ARPLIST *)malloc(sizeof(ARPLIST));
+	
+	if(HEAD == NULL)goto l;
+	while (head->next != NULL)
+	{
+		
+		if(memcmp(ip,head->ip,4) == 0)
+		{
+			if(flag == DELETE)
+			{
+				free(temp);
+				
+   			    if(head->front != HEAD)
+				   {
+					   head->next->front = head->front;
+					   head->front->next = head->next;
+					   free(head);
+					   return 1;
+				   }
+				   else
+				   {
+					   HEAD->next = NULL;
+					   free(head);
+					   return 1;
+				   }	
+			}
+			else if(flag == FIND)
+			{
+				printf("************8\n");
+				memcpy(mac_back,head->mac,6);
+				free(temp);
+				return 1;
+			}
+			
+		}
+		head = head->next;
+	}
+l:
+	memcpy(temp->ip,mybuf.src_ip,4);
+	memcpy(temp->mac,mybuf.src_mac,6);
+	temp->front = NULL;
+	temp->next = NULL;
+	temp->eth = mybuf.eth;
+	InsertArp_listToList(temp,&HEAD);
+	return -1;
+}
+
+// ARPLIST *temp = (ARPLIST *)malloc(sizeof(ARPLIST));
+void InsertArp_listToList(ARPLIST* Node,ARPLIST** Head)
+{
+        if (*Head == NULL)
+    {
+        *Head = Node;    
+    }
+    else
+    {
+
+            ARPLIST *p = *Head;
+
+            while (p->next != NULL )
+            {
+                p = p->next;
+            }
+
+           Node->front = p;
+        //将新插入结点的地址保存在最后一个结点的next指针里面
+        p->next = Node;
+        }
 }
