@@ -2,9 +2,7 @@
 
 int main()
 {
-	char Arm_ip[4]= {0xC0,0xA8,0x01,0xED};
-	char pc_mac[6] = {0x54, 0xEE, 0x75, 0x95, 0x8B, 0x6F};
-	char Arm_mac[6] = {0x00, 0x53, 0x50, 0x00, 0x09, 0x2B};
+
 	getinterface(); // 获取自身网卡信息
 	
 	int fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
@@ -14,11 +12,6 @@ int main()
 	
 	
 	
-SendArp(1,ONEUNICAST,fd,Arm_ip);
-SendArp(1,ONEUNICAST,fd,Arm_ip);
-SendArp(1,ONEUNICAST,fd,Arm_ip);
-
-SendArp(1,ONEUNICAST,fd,Arm_ip);
 	while (1)
 	{
 
@@ -39,8 +32,6 @@ SendArp(1,ONEUNICAST,fd,Arm_ip);
 			
 			if(ArpDispose(mybuf.src_ip,NULL,mybuf.dst_mac,FIND) == -1)
 			
-
-			// SendArp(1,UNICAST,fd,NULL);
 			continue;
 			
 		}
@@ -53,7 +44,9 @@ SendArp(1,ONEUNICAST,fd,Arm_ip);
 		if (Ethnum == -1)
 		{
 			//没有同一网段
+
 			continue;
+			
 			//路由表查表
 		}
 		

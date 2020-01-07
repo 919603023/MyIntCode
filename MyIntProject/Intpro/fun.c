@@ -3,9 +3,14 @@ int interface_num = 0; //接口数量
 
 MYBUF mybuf;
 
+
+
 INTERFACE net_interface[16]; //接口数据
 
 ARPLIST *HEAD = NULL;
+
+
+CONFIG_ROUTE_MSG *Route_Msg = NULL;
 
 int get_interface_num()
 {
@@ -325,6 +330,12 @@ unsigned int GetIpNet(int eth)
 	unsigned int b = (unsigned int)(net_interface[eth].netmask);
 	return a & b;
 }
+unsigned int TwoIPNet(unsigned char * first,unsigned char *secend)
+{
+	unsigned int a = (unsigned int)(first);
+	unsigned int b = (unsigned int)(secend);
+	return a & b;
+}
 //两数二进制相加
 unsigned int BinaryAnd(unsigned int first, unsigned int second)
 {
@@ -338,7 +349,7 @@ unsigned int BinaryAnd(unsigned int first, unsigned int second)
 	return first;
 }
 //ARP处理函数
-int ArpDispose(char *ip,char *mac,char *mac_back,int flag)
+int ArpDispose(unsigned char *ip,unsigned char *mac,unsigned char *mac_back,int flag)
 {
 	ARPLIST*head = HEAD;
 	
@@ -370,7 +381,7 @@ int ArpDispose(char *ip,char *mac,char *mac_back,int flag)
 			}
 			else if(flag == FIND)
 			{
-				printf("************8\n");
+				
 				memcpy(mac_back,head->mac,6);
 				free(temp);
 				return 1;
@@ -389,9 +400,92 @@ l:
 	return -1;
 }
 
+//路由表，吓一跳处理函数
+/**********************************
+ * 目的IP和链表IP的网络地址对比不同时
+ * 返回-1，
+ * 如果相同，将节点里面的吓一跳地址与
+ * 本机网卡的网段相比较，相同，返回
+ * 所出网卡，不相同返回-1
+ * 
+ * 只能FIND查找和删除
+ * 
+ * *******************************/
+int Config_Route_MsgDispose(unsigned char *ip,unsigned char *mac,unsigned char *ip_back,int flag)
+{
+	if(HEAD == NULL)goto l;
+	CONFIG_ROUTE_MSG*head = HEAD;
+
+	while (head->next != NULL)
+	{
+	if(memcmp(head->Route_Ip,(unsigned char *)(TwoIPNet(ip,head->Route_Netmask)),4) == 0)
+	{
+			if(flag == DELETE)
+			{
+				
+   			    if(head->front != HEAD)
+				   {
+					   head->next->front = head->front;
+					   head->front->next = head->next;
+					   free(head);
+					   return 0;
+				   }
+				   else
+				   {
+					   HEAD->next = NULL;
+					   free(head);
+					   return 0;
+				   }	
+			}
+			else if(flag == FIND)
+			{
+				for(int i  = 0;i < interface_num;i++)
+				{
+
+				
+				if(memcmp((unsigned char *)(TwoIPNet(head->Route_NextHop,net_interface[i].netmask)),(unsigned char *)(TwoIPNet(net_interface[i].netmask,net_interface[i].ip)),4) == 0)
+				{
+					return i;
+				}
+				}
+				
+				return -1;
+			}
+			
+		}
+		head = head->next;
+	}
+l:
+	return 0;
+}
+
 // ARPLIST *temp = (ARPLIST *)malloc(sizeof(ARPLIST));
 void InsertArp_listToList(ARPLIST* Node,ARPLIST** Head)
 {
+        if (*Head == NULL)
+    {
+        *Head = Node;    
+    }
+    else
+    {
+
+            ARPLIST *p = *Head;
+
+            while (p->next != NULL )
+            {
+                p = p->next;
+            }
+
+           Node->front = p;
+        //将新插入结点的地址保存在最后一个结点的next指针里面
+        p->next = Node;
+        }
+}
+
+
+void InsertConfig_RouteliToList(CONFIG_ROUTE_MSG* Node,CONFIG_ROUTE_MSG** Head)
+{
+
         if (*Head == NULL)
     {
         *Head = Node;    

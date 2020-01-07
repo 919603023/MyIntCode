@@ -115,15 +115,17 @@ typedef struct  arplist
 typedef struct Route_MsgNode
 {
 
-  unsigned char Route_Ip[4];
+  unsigned char Route_Ip[4];//目的IP地址
 
-  unsigned char Route_Mac[6];
+  unsigned char Route_Netmask[4];//子网掩码
+
+  unsigned char Route_NextHop[4];//下一跳，发向下一个IP指向的网段
 
   struct Route_MsgNode *front;
 
   struct Route_MsgNode *next;
 
-}Config_Route_Msg;
+}CONFIG_ROUTE_MSG;
 
 extern int get_interface_num();
 
@@ -148,8 +150,10 @@ extern int SendArp(int eth, int flag, int fd,unsigned char *ip);
 
 extern void InsertArp_listToList(ARPLIST* Node,ARPLIST** Head);
 
-extern int ArpDispose(char *ip,char *mac,char *mac_back,int flag);
+extern int ArpDispose(unsigned char *ip,unsigned char *mac,unsigned char *mac_back,int flag);
 
+
+extern int Config_Route_MsgDispose(unsigned char *ip,unsigned char *mac,unsigned char *ip_back,int flag);
 extern int interface_num ; //接口数量
 
 extern MYBUF mybuf;
