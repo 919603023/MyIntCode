@@ -456,7 +456,7 @@ int Config_Route_MsgDispose(unsigned char *ip,unsigned char *mac,unsigned char *
 		head = head->next;
 	}
 l:
-	return 0;
+	return -1;
 }
 
 // ARPLIST *temp = (ARPLIST *)malloc(sizeof(ARPLIST));
