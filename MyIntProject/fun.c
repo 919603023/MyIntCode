@@ -344,28 +344,10 @@ int getSubnetMask()
 
 int ReadFile(void **Head, int Type)
 {
+     Config_Route_Msg *Route_temp = (Config_Route_Msg *)malloc(sizeof(Config_Route_Msg));
     char text[1000] = {0};
-    char *FileName;
-    if (Type == 0)
-    {
-        FileName = "config_eth_msg";
-        
-    }
-    else if (Type == 1)
-    {
-        FileName = "config_route";
-        
-    }
-    else if (Type == 2)
-    {
-        FileName = "config_filter_msg";
-        
-    }
-    else
-    {
-        return -1;
-    }
-    //从文件读取字符串保存在字符串数组里
+    char *FileName ="Config_Route_Msg";
+
     FILE *fp;
     if ((fp = fopen(FileName, "r")) == NULL)
     {
@@ -385,20 +367,44 @@ int ReadFile(void **Head, int Type)
         }
         if (strchr(text, "{") != NULL)
         {
-            //根据类型插表
-            if (Type == 0)
-            {
-                GetEth_Msg(fp,(Config_Eth_Msg**)Head);
-            }
-            else if (Type == 1)
-            {
-                GetRoute_Msg(fp,(Config_Route_Msg**)Head);
-            }
-            else if (Type == 2)
-            {
-                GetFilter_Msg(fp,(Filter_Msg**)Head);
-            }
+            
         }
+        if (strstr(text, "Eth_Name") != NULL)
+     {
+                   MyStrcpy(Route_temp->Route_Name,strchr(text,':')+1,strchr(text,'\n'));
+                      //  strncpy(Eth_temp->Eth_Name, strstr(text, "Eth_Name") + 9,strlen(text)-14);
+                        printf("*");
+                        printf("Eth_Name:%s\n",Route_temp->Route_Name);
+    }        
+
+             
+             else  if (strstr(text, "Route_Ip") != NULL)
+               {
+                        
+                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
+                        Route_temp->Route_Ip.s_addr = inet_addr(a);
+                         
+                        printf("Route_Ip:%s\n",inet_ntoa(Route_temp->Route_Ip));
+               }
+
+             else  if (strstr(text, "Route_Mask") != NULL)
+                {
+                        
+                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
+                        Route_temp->Route_Mask.s_addr = inet_addr(a);
+                         
+                        printf("Route_Mask:%s\n",inet_ntoa(Route_temp->Route_Mask));
+                    
+                       
+                }
+             else  if (strstr(text, "Route_Mac") != NULL)
+                {       strncpy(Route_temp->Route_Mac, strstr(text, "Route_Mac") + 8,6);
+                        printf("Route_Mac:%s\n",strstr(text, "Route_Mac") + 8);
+                }
+            if (strchr(text, '}') != NULL)
+            {
+                return;
+            }
         
 
         return 0;
@@ -489,42 +495,7 @@ void GetRoute_Msg(int fp,Config_Route_Msg** Head)
             {
                 continue;
             }  
-            if (strstr(text, "Eth_Name") != NULL)
-               {
-                   MyStrcpy(Route_temp->Route_Name,strchr(text,':')+1,strchr(text,'\n'));
-                      //  strncpy(Eth_temp->Eth_Name, strstr(text, "Eth_Name") + 9,strlen(text)-14);
-                        printf("*");
-                        printf("Eth_Name:%s\n",Route_temp->Route_Name);
-               }        
-
-             
-             else  if (strstr(text, "Route_Ip") != NULL)
-               {
-                        
-                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
-                        Route_temp->Route_Ip.s_addr = inet_addr(a);
-                         
-                        printf("Route_Ip:%s\n",inet_ntoa(Route_temp->Route_Ip));
-               }
-
-             else  if (strstr(text, "Route_Mask") != NULL)
-                {
-                        
-                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
-                        Route_temp->Route_Mask.s_addr = inet_addr(a);
-                         
-                        printf("Route_Mask:%s\n",inet_ntoa(Route_temp->Route_Mask));
-                    
-                       
-                }
-             else  if (strstr(text, "Route_Mac") != NULL)
-                {       strncpy(Route_temp->Route_Mac, strstr(text, "Route_Mac") + 8,6);
-                        printf("Route_Mac:%s\n",strstr(text, "Route_Mac") + 8);
-                }
-            if (strchr(text, '}') != NULL)
-            {
-                return;
-            }
+            
                      
     }
     Route_temp->front = NULL;

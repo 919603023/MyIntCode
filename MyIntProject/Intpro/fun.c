@@ -485,15 +485,15 @@ void InsertArp_listToList(ARPLIST* Node,ARPLIST** Head)
 
 void InsertConfig_RouteliToList(CONFIG_ROUTE_MSG* Node,CONFIG_ROUTE_MSG** Head)
 {
-
+	Node->front = NULL;
+	Node->next = NULL;
         if (*Head == NULL)
     {
         *Head = Node;    
     }
     else
     {
-
-            ARPLIST *p = *Head;
+            CONFIG_ROUTE_MSG *p = *Head;
 
             while (p->next != NULL )
             {
@@ -504,4 +504,73 @@ void InsertConfig_RouteliToList(CONFIG_ROUTE_MSG* Node,CONFIG_ROUTE_MSG** Head)
         //将新插入结点的地址保存在最后一个结点的next指针里面
         p->next = Node;
         }
+}
+
+
+int ReadFile(void **Head, int Type)
+{
+     CONFIG_ROUTE_MSG *Route_temp = (CONFIG_ROUTE_MSG *)malloc(sizeof(CONFIG_ROUTE_MSG));
+    char text[1000] = {0};
+    char *FileName ="Config_Route_Msg";
+    FILE *fp;
+    if ((fp = fopen(FileName, "r")) == NULL)
+    {
+        perror("fail to fopen");
+        return -1;
+    }
+    while (1)
+    {
+
+        if (fgets(text, 500, fp) == NULL)
+        {
+            break;
+        }
+        else if (text[0] == "#")
+        {
+            continue;
+        }
+        if (strchr(text, "{") != NULL)
+        {
+            
+        }
+        if (strstr(text, "Eth_Name") != NULL)
+   		  {
+                   MyStrcpy(Route_temp->Route_Name,strchr(text,':')+1,strchr(text,'\n'));
+                      //  strncpy(Eth_temp->Eth_Name, strstr(text, "Eth_Name") + 9,strlen(text)-14);
+                        printf("*");
+                        printf("Eth_Name:%s\n",Route_temp->Route_Name);
+   			 }        
+
+             
+             else  if (strstr(text, "Route_Ip") != NULL)
+               {
+                        
+                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
+                        Route_temp->Route_Ip.s_addr = inet_addr(a);
+                         
+                        printf("Route_Ip:%s\n",inet_ntoa(Route_temp->Route_Ip));
+               }
+
+             else  if (strstr(text, "Route_Mask") != NULL)
+                {
+                        
+                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
+                        Route_temp->Route_Mask.s_addr = inet_addr(a);
+                         
+                        printf("Route_Mask:%s\n",inet_ntoa(Route_temp->Route_Mask));
+                    
+                       
+                }
+             else  if (strstr(text, "Route_Mac") != NULL)
+                {       strncpy(Route_temp->Route_Mac, strstr(text, "Route_Mac") + 8,6);
+                        printf("Route_Mac:%s\n",strstr(text, "Route_Mac") + 8);
+                }
+            if (strchr(text, '}') != NULL)
+            {
+                return;
+            }
+        
+
+        return 0;
+    }
 }
