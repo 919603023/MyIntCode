@@ -507,70 +507,73 @@ void InsertConfig_RouteliToList(CONFIG_ROUTE_MSG* Node,CONFIG_ROUTE_MSG** Head)
 }
 
 
-int ReadFile(void **Head, int Type)
+int ReadConfig_Route_MsgFile()
 {
-     CONFIG_ROUTE_MSG *Route_temp = (CONFIG_ROUTE_MSG *)malloc(sizeof(CONFIG_ROUTE_MSG));
-    char text[1000] = {0};
-    char *FileName ="Config_Route_Msg";
-    FILE *fp;
-    if ((fp = fopen(FileName, "r")) == NULL)
-    {
-        perror("fail to fopen");
-        return -1;
-    }
-    while (1)
-    {
+	CONFIG_ROUTE_MSG *Route_temp = (CONFIG_ROUTE_MSG *)malloc(sizeof(CONFIG_ROUTE_MSG));
+	char text[500] = {0};
+	char *FileName = "Config_Route_Msg";
+	FILE *fp;
+	if ((fp = fopen(FileName, "r")) == NULL)
+	{
+		perror("fail to fopen");
+		return -1;
+	}
+	while (1)
+	{
 
-        if (fgets(text, 500, fp) == NULL)
-        {
-            break;
-        }
-        else if (text[0] == "#")
-        {
-            continue;
-        }
-        if (strchr(text, "{") != NULL)
-        {
-            
-        }
-        if (strstr(text, "Eth_Name") != NULL)
-   		  {
-                   MyStrcpy(Route_temp->Route_Name,strchr(text,':')+1,strchr(text,'\n'));
-                      //  strncpy(Eth_temp->Eth_Name, strstr(text, "Eth_Name") + 9,strlen(text)-14);
-                        printf("*");
-                        printf("Eth_Name:%s\n",Route_temp->Route_Name);
-   			 }        
+		if (fgets(text, 500, fp) == NULL)
+		{
+			break;
+		}
+		else if (strchr(text, '#') != NULL)
+		{
+			continue;
+		}
+		if (strncmp(text, "{", 1) == 0)
+		{
+			while (1)
+			{
+				unsigned char buf[4];
+				unsigned char buff[100];
+				if (fgets(text, 500, fp) == NULL)
+				{
+					break;
+				}
 
-             
-             else  if (strstr(text, "Route_Ip") != NULL)
-               {
-                        
-                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
-                        Route_temp->Route_Ip.s_addr = inet_addr(a);
-                         
-                        printf("Route_Ip:%s\n",inet_ntoa(Route_temp->Route_Ip));
-               }
+				if (strncmp(text, "Route_Ip", 8) == 0)
+				{
+					sscanf(text, "%[^:]:%d.%d.%d.%d\n", buff, &buf[0], &buf[1], &buf[2], &buf[3]);
+					memcpy(Route_temp->Route_Ip, buf, 4);
+				}
+				else if (strncmp(text, "Route_Netmask", 13) == 0)
+				{
+					sscanf(text, "%[^:]:%d.%d.%d.%d\n", buff, &buf[0], &buf[1], &buf[2], &buf[3]);
+					memcpy(Route_temp->Route_Netmask, buf, 4);
+				}
+				else if (strncmp(text, "Route_NextHop", 13) == 0)
+				{
+					sscanf(text, "%[^:]:%d.%d.%d.%d\n", buff, &buf[0], &buf[1], &buf[2], &buf[3]);
+					memcpy(Route_temp->Route_NextHop, buf, 4);
+				}
+				else if (strchr(text, '#') != NULL)
+				{
+					continue;
+				}
+				else
+				{
+					if (strchr(text, '}') != NULL)
+					{
+						InsertConfig_RouteliToList(Route_temp, &Route_Msg);
+						break;
+					}
+				}
 
-             else  if (strstr(text, "Route_Mask") != NULL)
-                {
-                        
-                        MyStrcpy(a,strchr(text,':')+1,strchr(text,'\n'));
-                        Route_temp->Route_Mask.s_addr = inet_addr(a);
-                         
-                        printf("Route_Mask:%s\n",inet_ntoa(Route_temp->Route_Mask));
-                    
-                       
-                }
-             else  if (strstr(text, "Route_Mac") != NULL)
-                {       strncpy(Route_temp->Route_Mac, strstr(text, "Route_Mac") + 8,6);
-                        printf("Route_Mac:%s\n",strstr(text, "Route_Mac") + 8);
-                }
-            if (strchr(text, '}') != NULL)
-            {
-                return;
-            }
-        
-
-        return 0;
-    }
+				for (int i = 0; i < 4; i++)
+				{
+					printf("%d.", buf[i]);
+				}
+				printf("\n");
+			}
+		}
+	}
 }
